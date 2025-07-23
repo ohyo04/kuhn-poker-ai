@@ -1,0 +1,27 @@
+   {
+  "name": "kuhn-poker-game",
+  "version": "1.0.0",
+  "description": "AKQ クーン・ポーカーゲーム with AI シミュレーター",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "poker",
+    "game",
+    "ai",
+    "simulator"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
