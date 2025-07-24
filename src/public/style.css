@@ -52,6 +52,66 @@ body {
     border-bottom: 2px solid #084c20;
 }
 
+/* --- 下部ナビゲーションタブ (スマホ用) --- */
+.bottom-nav-tabs {
+    display: none; /* PC では非表示 */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(180deg, #0d8c38 0%, #084c20 100%);
+    border-top: 2px solid #11a144;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.3);
+    z-index: 1000;
+    padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+}
+
+.bottom-nav-tabs .nav-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 4px;
+    margin: 0;
+    background: transparent;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    min-height: 60px;
+    justify-content: center;
+}
+
+.bottom-nav-tabs .nav-tab:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.bottom-nav-tabs .nav-tab.active {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    transform: translateY(-2px);
+}
+
+.nav-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+    line-height: 1;
+}
+
+.nav-label {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    opacity: 0.9;
+}
+
+.bottom-nav-tabs .nav-tab.active .nav-label {
+    opacity: 1;
+    color: #ffffff;
+}
+
+.bottom-nav-tabs .nav-tab.active .nav-icon {
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.5));
+}
+
 /* --- メインコンテンツエリア --- */
 main#content-area {
     flex: 1;
@@ -622,14 +682,141 @@ h3 {
         border-left: none;
         border-right: none;
         box-shadow: none;
+        padding-bottom: 80px; /* 下部タブの分の余白 */
     }
     
     html {
         overflow-x: hidden; /* スマホでは横スクロールを禁止 */
     }
+    
+    /* PC用のナビゲーションタブを非表示 */
+    .nav-tabs {
+        display: none;
+    }
+    
+    /* 下部タブを表示 */
+    .bottom-nav-tabs {
+        display: flex;
+    }
+    
+    /* メインコンテンツエリアの調整 */
+    main#content-area {
+        padding-bottom: 0;
+        height: calc(100vh - 80px); /* 下部タブ分を除く */
+    }
 
     .content-screen {
         padding: 10px; /* スマホでは余白を少し詰める */
+    }
+    
+    /* ゲーム画面の改善 */
+    #game-screen {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        justify-content: space-between;
+    }
+    
+    /* 上部の操作エリアをコンパクトに */
+    #game-info {
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px;
+        background: rgba(0,0,0,0.1);
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    
+    #scoreboard {
+        order: -1; /* 戦績を一番上に表示 */
+        border: none;
+        background: rgba(255,255,255,0.1);
+        border-radius: 6px;
+        padding: 8px;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        text-align: center;
+    }
+    
+    .stat-item {
+        background: rgba(255,255,255,0.1);
+        padding: 6px;
+        border-radius: 4px;
+    }
+    
+    .stat-value {
+        font-size: 16px;
+        font-weight: bold;
+        color: #ffeb3b;
+        display: block;
+    }
+    
+    .stat-label {
+        font-size: 10px;
+        opacity: 0.8;
+        margin-top: 2px;
+    }
+    
+    /* AI設定エリアの改善 */
+    #player-ai-controls, #opponent-ai-controls { 
+        text-align: center; 
+        width: 100%;
+        background: rgba(255,255,255,0.05);
+        border-radius: 8px;
+        padding: 10px;
+        margin: 4px 0;
+    }
+    
+    .ai-controls select {
+        width: 100%;
+        max-width: 200px;
+        margin: 4px 0;
+    }
+    
+    .settings-button {
+        width: 100%;
+        max-width: 200px;
+        margin-top: 8px;
+    }
+
+    /* カードサイズを調整 - スマホで見やすく */
+    .card { 
+        width: 70px; 
+        height: 98px; 
+        font-size: 28px; 
+        margin: 8px;
+        border: 3px solid #333;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+    
+    .card-area {
+        min-height: 110px; /* カードサイズに合わせて調整 */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 15px 0;
+    }
+
+    /* ボタンのサイズと文字を調整 - タッチ操作最適化 */
+    #actions button, .action-button { 
+        padding: 15px 25px; 
+        font-size: 16px; 
+        min-height: 50px; /* タッチ操作推奨サイズ */
+        margin: 6px;
+        border-radius: 10px;
+        font-weight: 600;
+        min-width: 120px;
+    }
+    
+    #actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin: 20px 0;
     }
     
     body { 

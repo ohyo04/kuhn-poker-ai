@@ -20,12 +20,6 @@
     <!-- ★全体を囲むコンテナを追加 -->
     <div class="container">
 
-        <div class="nav-tabs">
-            <div class="nav-tab active" data-tab="game">ゲーム</div>
-            <div class="nav-tab" data-tab="stats">統計/リプレイ</div>
-            <div class="nav-tab" data-tab="simulator">AIシミュレーター</div>
-        </div>
-
         <main id="content-area">
             <div id="start-screen" class="content-screen active">
                 <h1>クーン・ポーカー (AKQ)</h1>
@@ -49,9 +43,18 @@
                         <button id="open-player-settings-button" class="settings-button">設定</button>
                     </div>
                     <div id="scoreboard">
-                        <strong>戦績</strong> | 
-                        <span id="player-wins">0</span>勝 - <span id="opponent-wins">0</span>敗 |
-                        EV: <span id="player-ev">0.00</span>
+                        <div class="stat-item">
+                            <span class="stat-value" id="player-wins">0</span>
+                            <span class="stat-label">勝利</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="opponent-wins">0</span>
+                            <span class="stat-label">敗北</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="player-ev">0.00</span>
+                            <span class="stat-label">EV</span>
+                        </div>
                     </div>
                     <div id="opponent-ai-controls" class="ai-controls">
                         <label for="opponent-ai-type">相手:</label>
@@ -203,6 +206,22 @@
             <div id="sim-p2-settings-screen" class="settings-overlay"></div>
             <div id="strategy-details-overlay" class="settings-overlay"></div>
         </main>
+
+        <!-- ★下部ナビゲーションタブ -->
+        <div class="bottom-nav-tabs">
+            <div class="nav-tab active" data-tab="game">
+                <div class="nav-icon">🎮</div>
+                <div class="nav-label">ゲーム</div>
+            </div>
+            <div class="nav-tab" data-tab="stats">
+                <div class="nav-icon">📊</div>
+                <div class="nav-label">統計</div>
+            </div>
+            <div class="nav-tab" data-tab="simulator">
+                <div class="nav-icon">🤖</div>
+                <div class="nav-label">AI</div>
+            </div>
+        </div>
 
         <script src="script.js"></script>
 
