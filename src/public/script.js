@@ -1,6 +1,41 @@
 'use strict';
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // --- モバイルビューポート調整 ---
+    function adjustMobileViewport() {
+        if (window.innerWidth <= 799) {
+            // 実際のビューポート高さを取得
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+            document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+            
+            // メインコンテンツエリアの高さを動的に調整
+            const mainContent = document.getElementById('content-area');
+            if (mainContent) {
+                const bottomNavHeight = 80; // 下部ナビの高さ
+                const adjustedHeight = window.innerHeight - bottomNavHeight;
+                mainContent.style.height = `${adjustedHeight}px`;
+                mainContent.style.maxHeight = `${adjustedHeight}px`;
+            }
+            
+            // ゲームテーブルも調整
+            const gameTable = document.getElementById('game-table');
+            if (gameTable) {
+                const tableHeight = window.innerHeight - 200; // 余裕を持った計算
+                gameTable.style.minHeight = `${Math.max(tableHeight, 300)}px`;
+            }
+        }
+    }
+    
+    // 初期調整
+    adjustMobileViewport();
+    
+    // ウィンドウサイズ変更時に再調整
+    window.addEventListener('resize', adjustMobileViewport);
+    window.addEventListener('orientationchange', () => {
+        setTimeout(adjustMobileViewport, 100);
+    });
+
     // --- 認証チェック ---
     const authToken = localStorage.getItem('authToken');
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');

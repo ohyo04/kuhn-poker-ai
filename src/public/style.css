@@ -684,18 +684,29 @@ h3 {
 
 /* モバイルブラウザのUIバー対策 */
 @media (max-width: 799px) {
+    /* CSS カスタムプロパティの定義 */
+    :root {
+        --app-height: 100vh;
+    }
+    
     /* モバイルブラウザのアドレスバー・ツールバー対応 */
     html {
         /* iOS Safariのアドレスバー対応 */
         -webkit-text-size-adjust: none;
         touch-action: manipulation;
+        /* より確実な高さ設定 */
+        height: var(--app-height);
+        height: 100vh;
+        height: 100dvh;
     }
     
     body {
-        /* モバイルブラウザのスクロール問題を防ぐ */
-        position: fixed;
-        width: 100%;
+        /* より安全なスクロール制御 */
+        height: var(--app-height);
+        height: 100vh;
+        height: 100dvh;
         overflow: hidden;
+        /* position: fixed を削除してレイアウト競合を回避 */
     }
 }
 
@@ -727,11 +738,14 @@ h3 {
     /* メインコンテンツエリアの調整 */
     main#content-area {
         padding-bottom: 0;
-        height: calc(100dvh - 80px); /* 動的ビューポート高さを使用 */
-        height: calc(100vh - 80px); /* フォールバック */
-        overflow-y: auto; /* 必要に応じてスクロール */
-        /* モバイルブラウザのアドレスバー対応 */
-        min-height: calc(100vh - 160px); /* 最小高さを設定 */
+        /* JavaScript計算値を最優先、フォールバック順 */
+        height: calc(var(--vh, 1vh) * 100 - 80px); /* JavaScript動的計算 */
+        height: calc(100vh - 100px); /* 従来のフォールバック */
+        height: calc(100dvh - 90px); /* 動的ビューポート高さ */
+        overflow-y: auto;
+        /* スクロール問題を回避 */
+        -webkit-overflow-scrolling: touch;
+        position: relative;
     }
 
     .content-screen {
@@ -837,8 +851,9 @@ h3 {
     #game-table {
         margin-top: 5px;
         padding: 4px;
-        min-height: calc(100dvh - 200px); /* 動的ビューポート高さを使用 */
-        min-height: calc(100vh - 200px); /* フォールバック */
+        /* より保守的な高さ計算 */
+        min-height: calc(100vh - 220px); /* フォールバック */
+        min-height: calc(100dvh - 210px); /* 動的ビューポート高さ */
         max-width: 100%;
         border-radius: 6px;
         border: 1px solid #c0c0c0;
