@@ -825,64 +825,53 @@ h3 {
     
     /* メッセージエリアを読みやすく */
     #message-area {
-        font-size: 13px;
-        padding: 8px;
-        min-height: 40px;
+        font-size: 14px;
+        padding: 12px;
+        min-height: 50px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        margin: 15px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        line-height: 1.3;
+    }
+    
+    /* ポットエリアの改善 */
+    #pot-area {
+        background: linear-gradient(135deg, #2e7d32, #388e3c);
+        padding: 15px;
+        border-radius: 12px;
+        margin: 15px 0;
+        text-align: center;
+        border: 3px solid #ffeb3b;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    #pot-area h3 {
+        font-size: 16px;
+        margin: 0 0 8px 0;
+        color: #ffffff;
+    }
+    
+    #pot-amount {
+        font-size: 24px;
+        font-weight: bold;
+        color: #ffeb3b;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
     }
     
     /* チップとポット表示を見やすく */
-    #pot-amount, #player-chips, #opponent-chips {
-        font-size: 14px;
+    #player-chips, #opponent-chips {
+        font-size: 16px;
+        font-weight: bold;
+        color: #ffeb3b;
     }
     
     /* スコアボード文字サイズ調整 */
     #scoreboard {
         font-size: 13px;
-    }
-
-    /* 上部の操作エリアを縦並びに変更 */
-    #game-info {
-        flex-direction: column;
-        gap: 10px;
-        padding: 10px;
-    }
-    #scoreboard {
-        order: -1; /* 戦績を一番上に表示 */
-        border: none;
-        border-top: 1px solid #ccc;
-        border-bottom: 1px solid #ccc;
-        padding: 8px 0;
-        width: 100%;
-    }
-    #player-ai-controls, #opponent-ai-controls { text-align: center; width: 100%; }
-
-    /* カードサイズを調整 - スマホで見やすく */
-    .card { 
-        width: 60px; 
-        height: 84px; 
-        font-size: 24px; 
-        margin: 2px;
-    }
-    
-    .card-area {
-        min-height: 95px; /* カードサイズに合わせて調整 */
-    }
-    
-    /* ボタンのサイズと文字を調整 - タッチ操作最適化 */
-    #actions button, .action-button { 
-        padding: 12px 20px; 
-        font-size: 14px; 
-        min-height: 44px; /* タッチ操作推奨サイズ */
-        margin: 4px;
-    }
-    
-    /* ナビゲーションタブもタッチしやすく */
-    .nav-tab {
-        padding: 12px 16px;
-        min-height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
 
     /* 統計画面を縦並びに */
@@ -926,70 +915,181 @@ h3 {
 /* --- 縦向きスマホ専用最適化 --- */
 @media (max-width: 479px) and (orientation: portrait) {
     /* 非常に小さな画面での追加調整 */
-    .nav-tab {
-        padding: 10px 12px;
-        font-size: 13px;
+    .bottom-nav-tabs .nav-tab {
+        min-height: 65px;
+        padding: 10px 4px;
+    }
+    
+    .nav-icon {
+        font-size: 20px;
+        margin-bottom: 3px;
+    }
+    
+    .nav-label {
+        font-size: 11px;
     }
     
     .card { 
-        width: 50px; 
-        height: 70px; 
-        font-size: 20px; 
+        width: 65px; 
+        height: 91px; 
+        font-size: 24px; 
+        margin: 6px;
     }
     
     .card-area {
-        min-height: 80px;
+        min-height: 105px;
     }
     
     #actions button, .action-button { 
-        padding: 10px 16px; 
-        font-size: 13px; 
-        margin: 2px;
+        padding: 12px 18px; 
+        font-size: 15px; 
+        min-height: 48px;
+        margin: 4px;
+        min-width: 110px;
     }
     
     /* ゲーム画面のパディング調整 */
     .content-screen {
-        padding: 5px;
+        padding: 8px;
     }
     
-    /* AI選択エリアをより縦並びに */
+    /* AI設定エリアをより縦並びに */
     .ai-controls {
-        margin: 5px 0;
+        margin: 6px 0;
+        padding: 8px;
     }
     
     .ai-controls select {
-        margin: 2px 0;
-        width: 90%;
+        margin: 3px 0;
+        width: 95%;
+        max-width: 180px;
+    }
+    
+    .settings-button {
+        width: 95%;
+        max-width: 180px;
+        margin-top: 6px;
+    }
+    
+    /* ポットエリアの調整 */
+    #pot-area {
+        padding: 12px;
+        margin: 12px 0;
+    }
+    
+    #pot-area h3 {
+        font-size: 14px;
+        margin: 0 0 6px 0;
+    }
+    
+    #pot-amount {
+        font-size: 20px;
+    }
+    
+    /* スコアボードの調整 */
+    #scoreboard {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        padding: 6px;
+    }
+    
+    .stat-value {
+        font-size: 14px;
+    }
+    
+    .stat-label {
+        font-size: 9px;
     }
 }
 
 /* --- 横向きスマホ・小タブレット対応 --- */
 @media (max-width: 799px) and (orientation: landscape) {
     /* 横向きでは高さが制限されるので調整 */
+    .container {
+        padding-bottom: 70px; /* 下部タブの分を少し減らす */
+    }
+    
+    main#content-area {
+        height: calc(100vh - 70px);
+    }
+    
+    .bottom-nav-tabs {
+        padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+    }
+    
+    .bottom-nav-tabs .nav-tab {
+        min-height: 55px;
+        padding: 6px 4px;
+    }
+    
+    .nav-icon {
+        font-size: 20px;
+        margin-bottom: 2px;
+    }
+    
+    .nav-label {
+        font-size: 10px;
+    }
+    
     .content-screen {
-        padding: 5px;
+        padding: 8px;
     }
     
     #game-info {
         flex-direction: row;
         flex-wrap: wrap;
-        gap: 5px;
+        gap: 8px;
+        padding: 6px;
     }
     
     #scoreboard {
         order: 0;
         width: auto;
+        min-width: 250px;
+        grid-template-columns: repeat(3, 1fr);
+        flex: 1;
+    }
+    
+    .ai-controls {
+        flex: 1;
         min-width: 200px;
     }
     
     .card { 
-        width: 45px; 
-        height: 63px; 
-        font-size: 18px; 
+        width: 55px; 
+        height: 77px; 
+        font-size: 20px; 
+        margin: 4px;
     }
     
     .card-area {
-        min-height: 70px;
+        min-height: 85px;
+        margin: 10px 0;
+    }
+    
+    #actions {
+        margin: 15px 0;
+    }
+    
+    #actions button, .action-button {
+        padding: 10px 16px;
+        font-size: 14px;
+        min-height: 45px;
+        min-width: 100px;
+    }
+    
+    #pot-area {
+        padding: 10px;
+        margin: 10px 0;
+    }
+    
+    #pot-area h3 {
+        font-size: 14px;
+        margin: 0 0 4px 0;
+    }
+    
+    #pot-amount {
+        font-size: 18px;
     }
 }
 
