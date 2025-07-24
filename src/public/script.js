@@ -1,17 +1,119 @@
 'use strict';
 
-document.addEventListener('DOMContentLoaded', () => {
-    // --- ログイン状態の確認 ---
-    // 本来はログインページで設定されますが、テスト用に'test_player'でログインした状態を再現します。
-    const loggedInUser = sessionStorage.getItem('loggedInUser') || 'test_player';
-    sessionStorage.setItem('loggedInUser', loggedInUser);
+document.addEventListener('DOMContentLoaded', async () => {
+    // --- 認証チェック ---
+    const authToken = localStorage.getItem('authToken');
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    
+    if (!authToken || !currentUser.username) {
+        // 未ログインの場合、ログイン画面にリダイレクト
+        alert('ログインが必要です。ログイン画面に移動します。');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // --- API通信用のヘルパー関数 ---
+    async function apiRequest(endpoint, options = {}) {
+        const defaultOptions = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            }
+        };
+        
+        const mergedOptions = {
+            ...defaultOptions,
+            ...options,
+            headers: { ...defaultOptions.headers, ...options.headers }
+        };
+
+        try {
+            const response = await fetch(`/api${endpoint}`, mergedOptions);
+            const data = await response.json();
+            
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    // トークン無効の場合、ログアウト
+                    logout();
+                    return null;
+                }
+                throw new Error(data.error || 'API request failed');
+            }
+            
+            return data;
+        } catch (error) {
+            console.error('API request error:', error);
+            throw error;
+        }
+    }
+
+    // --- ログアウト機能 ---
+    function logout() {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('currentUser');
+        alert('セッションが無効になりました。ログイン画面に移動します。');
+        window.location.href = 'login.html';
+    }
 
     // --- ユーザーデータの読み込み ---
-    let allUsersData = JSON.parse(localStorage.getItem('kuhn_poker_users')) || {};
-    if (!allUsersData[loggedInUser]) {
-        allUsersData[loggedInUser] = {};
+    let currentUserData = {
+        stats: { gamesPlayed: 0, playerWins: 0, totalProfit: 0 },
+        history: [],
+        aiTypes: { player: 'human', opponent: 'kensjitsu' },
+        customAiSettings: {
+            player: { name: "カスタムAI", s1_a_bet: 0.8, s1_k_bet: 0.0, s1_q_bet: 0.1, s1_a_call: 1.0, s1_k_call: 0.1, s1_q_call: 0.0, s2_a_bet: 1.0, s2_k_bet: 0.0, s2_q_bet: 0.1, s2_a_call: 1.0, s2_k_call: 0.2, s2_q_call: 0.0 },
+            opponent: { name: "カスタムAI", s1_a_bet: 0.8, s1_k_bet: 0.0, s1_q_bet: 0.1, s1_a_call: 1.0, s1_k_call: 0.1, s1_q_call: 0.0, s2_a_bet: 1.0, s2_k_bet: 0.0, s2_q_bet: 0.1, s2_a_call: 1.0, s2_k_call: 0.2, s2_q_call: 0.0 }
+        }
+    };
+
+    // サーバーからデータを取得
+    async function loadUserData() {
+        try {
+            const [stats, history, aiSettings] = await Promise.all([
+                apiRequest('/stats'),
+                apiRequest('/history'),
+                apiRequest('/ai-settings')
+            ]);
+            
+            if (stats) currentUserData.stats = stats;
+            if (history) currentUserData.history = history;
+            if (aiSettings) {
+                if (aiSettings.player) {
+                    currentUserData.aiTypes.player = aiSettings.player.aiType;
+                    currentUserData.customAiSettings.player = aiSettings.player.settings;
+                }
+                if (aiSettings.opponent) {
+                    currentUserData.aiTypes.opponent = aiSettings.opponent.aiType;
+                    currentUserData.customAiSettings.opponent = aiSettings.opponent.settings;
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load user data:', error);
+        }
     }
-    let currentUserData = allUsersData[loggedInUser];
+
+    // データをサーバーに保存
+    async function saveGameResult(gameData) {
+        try {
+            await apiRequest('/game-result', {
+                method: 'POST',
+                body: JSON.stringify(gameData)
+            });
+        } catch (error) {
+            console.error('Failed to save game result:', error);
+        }
+    }
+
+    async function saveAiSettings(role, aiType, settings) {
+        try {
+            await apiRequest('/ai-settings', {
+                method: 'POST',
+                body: JSON.stringify({ role, aiType, settings })
+            });
+        } catch (error) {
+            console.error('Failed to save AI settings:', error);
+        }
+    }
 
     // --- HTML要素の取得 ---
     const elements = {
@@ -85,10 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let simulatorCustomAiSettings = { p1: {}, p2: {} };
 
     // --- Helper Functions ---
-    function saveUserData() {
-        allUsersData[loggedInUser] = currentUserData;
-        localStorage.setItem('kuhn_poker_users', JSON.stringify(allUsersData));
-    }
+    // saveUserData関数は削除（データベース連携に変更）
 
     function syncCurrentSettings(actor, aiType) {
         if (aiType === 'custom') {
@@ -311,13 +410,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     }
     
-    function endRound(winner) {
+    async function endRound(winner) {
         currentUserData.stats.gamesPlayed++;
         const profit = state.chips.player - 1;
         currentUserData.stats.totalProfit += profit;
         
-        const logEntry = {
-            id: Date.now(),
+        const gameData = {
             playerCard: state.cards.player,
             opponentCard: state.cards.opponent,
             history: state.history,
@@ -327,10 +425,18 @@ document.addEventListener('DOMContentLoaded', () => {
             playerAi: state.aiTypes.player,
             opponentAi: state.aiTypes.opponent
         };
+        
+        // サーバーにゲーム結果を保存
+        await saveGameResult(gameData);
+        
+        // ローカルの履歴も更新
+        const logEntry = {
+            id: Date.now(),
+            ...gameData
+        };
         if (!currentUserData.history) currentUserData.history = [];
         currentUserData.history.unshift(logEntry);
         if (currentUserData.history.length > 100) currentUserData.history.pop();
-        saveUserData();
         
         updateActionButtons({});
         elements.newGameButton.classList.remove('hidden');
@@ -643,18 +749,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Event Listeners ---
-    elements.playerAiTypeSelect.addEventListener('change', (e) => {
+    elements.playerAiTypeSelect.addEventListener('change', async (e) => {
         state.aiTypes.player = e.target.value;
         syncCurrentSettings('player', state.aiTypes.player);
         currentUserData.aiTypes.player = e.target.value;
-        saveUserData();
+        await saveAiSettings('player', e.target.value, currentAiSettings.player);
         initializeGame();
     });
-    elements.opponentAiTypeSelect.addEventListener('change', (e) => {
+    elements.opponentAiTypeSelect.addEventListener('change', async (e) => {
         state.aiTypes.opponent = e.target.value;
         syncCurrentSettings('opponent', state.aiTypes.opponent);
         currentUserData.aiTypes.opponent = e.target.value;
-        saveUserData();
+        await saveAiSettings('opponent', e.target.value, currentAiSettings.opponent);
         initializeGame();
     });
     
@@ -672,36 +778,42 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    elements.clearStatsButton.addEventListener('click', () => {
+    elements.clearStatsButton.addEventListener('click', async () => {
         if (window.confirm('本当にあなたのすべての統計と履歴を削除しますか？この操作は元に戻せません。')) {
-            currentUserData.history = [];
-            currentUserData.stats = { gamesPlayed: 0, playerWins: 0, totalProfit: 0 };
-            state.stats.opponentWins = 0;
-            saveUserData();
-            updateStatsHub();
+            try {
+                // サーバー側でのデータ削除は今回は実装せず、ローカルのみリセット
+                currentUserData.history = [];
+                currentUserData.stats = { gamesPlayed: 0, playerWins: 0, totalProfit: 0 };
+                state.stats.opponentWins = 0;
+                updateStatsHub();
+                alert('統計データがリセットされました。');
+            } catch (error) {
+                console.error('Failed to clear stats:', error);
+                alert('統計のリセットに失敗しました。');
+            }
         }
     });
 
     elements.openPlayerSettingsButton.addEventListener('click', () => {
-        createAndSetupSettingsPanel('player', currentAiSettings.player, (newSettings) => {
+        createAndSetupSettingsPanel('player', currentAiSettings.player, async (newSettings) => {
             elements.playerAiTypeSelect.value = 'custom';
             state.aiTypes.player = 'custom';
             currentAiSettings.player = newSettings;
             currentUserData.aiTypes.player = 'custom';
             currentUserData.customAiSettings.player = { ...newSettings };
-            saveUserData();
+            await saveAiSettings('player', 'custom', newSettings);
         });
         showSettingsOverlay('player', true);
     });
 
     elements.openOpponentSettingsButton.addEventListener('click', () => {
-        createAndSetupSettingsPanel('opponent', currentAiSettings.opponent, (newSettings) => {
+        createAndSetupSettingsPanel('opponent', currentAiSettings.opponent, async (newSettings) => {
             elements.opponentAiTypeSelect.value = 'custom';
             state.aiTypes.opponent = 'custom';
             currentAiSettings.opponent = newSettings;
             currentUserData.aiTypes.opponent = 'custom';
             currentUserData.customAiSettings.opponent = { ...newSettings };
-            saveUserData();
+            await saveAiSettings('opponent', 'custom', newSettings);
         });
         showSettingsOverlay('opponent', true);
     });
@@ -740,22 +852,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Initialization ---
-    function main() {
+    async function main() {
         elements.initialStartButton.addEventListener('click', () => {
             showScreen('game');
             initializeGame();
         });
 
-        document.querySelector('#player-ai-controls > label').textContent = `${loggedInUser}:`;
+        // ユーザー名表示
+        document.querySelector('#player-ai-controls > label').textContent = `${currentUser.username}:`;
         
-        currentUserData.aiTypes = currentUserData.aiTypes || { player: 'human', opponent: 'kensjitsu' };
-        currentUserData.customAiSettings = currentUserData.customAiSettings || {
-            player: { name: "カスタムAI", ...aiProfiles.gto },
-            opponent: { name: "カスタムAI", ...aiProfiles.gto }
-        };
-        currentUserData.stats = currentUserData.stats || { gamesPlayed: 0, playerWins: 0, totalProfit: 0 };
-        currentUserData.history = currentUserData.history || [];
-        saveUserData();
+        // サーバーからデータを読み込み
+        await loadUserData();
 
         state.aiTypes = currentUserData.aiTypes;
         elements.playerAiTypeSelect.value = state.aiTypes.player;
@@ -769,6 +876,28 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeFilters();
         setupSimulator();
         
+        // ログアウトボタンを追加
+        addLogoutButton();
+    }
+
+    // ログアウトボタンを追加
+    function addLogoutButton() {
+        const navTabs = document.querySelector('.nav-tabs');
+        const logoutBtn = document.createElement('button');
+        logoutBtn.textContent = 'ログアウト';
+        logoutBtn.className = 'logout-button';
+        logoutBtn.style.cssText = `
+            margin-left: auto;
+            padding: 8px 16px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        `;
+        logoutBtn.addEventListener('click', logout);
+        navTabs.appendChild(logoutBtn);
     }
 
     main();
