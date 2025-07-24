@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const { pool } = require('./database');
-const { generateToken, authenticateToken } = require('./auth');
+const { query, run } = require('../database');
+const { generateToken, authenticateToken } = require('../auth');
 
 const router = express.Router();
 
@@ -19,7 +19,7 @@ router.post('/register', async (req, res) => {
     }
 
     // ユーザー名の重複チェック
-    const existingUser = await pool.query('SELECT id FROM users WHERE username = $1', [username]);
+    const existingUser = await query('SELECT id FROM users WHERE username = ?', [username]);
     if (existingUser.rows.length > 0) {
       return res.status(409).json({ error: 'Username already exists' });
     }
@@ -29,25 +29,22 @@ router.post('/register', async (req, res) => {
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
     // ユーザー作成
-    const result = await pool.query(
-      'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username',
+    const result = await run(
+      'INSERT INTO users (username, password_hash) VALUES (?, ?)',
       [username, passwordHash]
     );
 
-    const user = result.rows[0];
+    const userId = result.lastID;
 
     // 初期統計データ作成
-    await pool.query(
-      'INSERT INTO user_stats (user_id) VALUES ($1)',
-      [user.id]
-    );
+    await run('INSERT INTO user_stats (user_id) VALUES (?)', [userId]);
 
     // JWTトークン生成
-    const token = generateToken(user.id, user.username);
+    const token = generateToken(userId, username);
 
     res.status(201).json({
       success: true,
-      user: { id: user.id, username: user.username },
+      user: { id: userId, username: username },
       token
     });
 
@@ -67,7 +64,7 @@ router.post('/login', async (req, res) => {
     }
 
     // ユーザー検索
-    const result = await pool.query('SELECT id, username, password_hash FROM users WHERE username = $1', [username]);
+    const result = await query('SELECT id, username, password_hash FROM users WHERE username = ?', [username]);
     if (result.rows.length === 0) {
       return res.status(401).json({ error: 'Invalid username or password' });
     }
@@ -98,8 +95,8 @@ router.post('/login', async (req, res) => {
 // ユーザー統計取得
 router.get('/stats', authenticateToken, async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT games_played, player_wins, total_profit FROM user_stats WHERE user_id = $1',
+    const result = await query(
+      'SELECT games_played, player_wins, total_profit FROM user_stats WHERE user_id = ?',
       [req.user.id]
     );
 
@@ -123,8 +120,8 @@ router.get('/stats', authenticateToken, async (req, res) => {
 // ゲーム履歴取得
 router.get('/history', authenticateToken, async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT * FROM game_history WHERE user_id = $1 ORDER BY created_at DESC LIMIT 100',
+    const result = await query(
+      'SELECT * FROM game_history WHERE user_id = ? ORDER BY created_at DESC LIMIT 100',
       [req.user.id]
     );
 
@@ -133,7 +130,7 @@ router.get('/history', authenticateToken, async (req, res) => {
       playerCard: row.player_card,
       opponentCard: row.opponent_card,
       history: row.history,
-      isPlayerFirst: row.is_player_first,
+      isPlayerFirst: Boolean(row.is_player_first),
       winner: row.winner,
       profit: parseFloat(row.profit),
       playerAi: row.player_ai,
@@ -164,22 +161,22 @@ router.post('/game-result', authenticateToken, async (req, res) => {
     } = req.body;
 
     // ゲーム履歴保存
-    await pool.query(
+    await run(
       `INSERT INTO game_history 
        (user_id, player_card, opponent_card, history, is_player_first, winner, profit, player_ai, opponent_ai) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-      [req.user.id, playerCard, opponentCard, history, isPlayerFirst, winner, profit, playerAi, opponentAi]
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [req.user.id, playerCard, opponentCard, history, isPlayerFirst ? 1 : 0, winner, profit, playerAi, opponentAi]
     );
 
     // 統計更新
     const winIncrement = winner === 'player' ? 1 : 0;
-    await pool.query(
+    await run(
       `UPDATE user_stats 
        SET games_played = games_played + 1, 
-           player_wins = player_wins + $1, 
-           total_profit = total_profit + $2,
+           player_wins = player_wins + ?, 
+           total_profit = total_profit + ?,
            updated_at = CURRENT_TIMESTAMP
-       WHERE user_id = $3`,
+       WHERE user_id = ?`,
       [winIncrement, profit, req.user.id]
     );
 
@@ -196,11 +193,10 @@ router.post('/ai-settings', authenticateToken, async (req, res) => {
   try {
     const { role, aiType, settings } = req.body;
 
-    await pool.query(
-      `INSERT INTO user_ai_settings (user_id, ai_type, role, settings) 
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (user_id, role) 
-       DO UPDATE SET ai_type = $2, settings = $4, updated_at = CURRENT_TIMESTAMP`,
+    // SQLiteではUPSERTを使用
+    await run(
+      `INSERT OR REPLACE INTO user_ai_settings (user_id, ai_type, role, settings, updated_at) 
+       VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
       [req.user.id, aiType, role, JSON.stringify(settings)]
     );
 
@@ -215,8 +211,8 @@ router.post('/ai-settings', authenticateToken, async (req, res) => {
 // AI設定取得
 router.get('/ai-settings', authenticateToken, async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT role, ai_type, settings FROM user_ai_settings WHERE user_id = $1',
+    const result = await query(
+      'SELECT role, ai_type, settings FROM user_ai_settings WHERE user_id = ?',
       [req.user.id]
     );
 
@@ -224,7 +220,7 @@ router.get('/ai-settings', authenticateToken, async (req, res) => {
     result.rows.forEach(row => {
       aiSettings[row.role] = {
         aiType: row.ai_type,
-        settings: row.settings
+        settings: JSON.parse(row.settings)
       };
     });
 

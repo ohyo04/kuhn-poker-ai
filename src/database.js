@@ -1,70 +1,115 @@
 require('dotenv').config();
-const { Pool } = require('pg');
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+// データベースファイルのパス
+const dbPath = process.env.NODE_ENV === 'production' 
+  ? '/opt/render/project/src/database.sqlite'
+  : path.join(__dirname, 'database.sqlite');
+
+// SQLiteデータベース接続
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('SQLite connection error:', err);
+  } else {
+    console.log('Connected to SQLite database');
+  }
 });
+
+// プロミス化されたクエリ関数
+function query(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.all(sql, params, (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve({ rows });
+      }
+    });
+  });
+}
+
+// INSERT文用のプロミス化関数
+function run(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.run(sql, params, function(err) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve({ 
+          lastID: this.lastID,
+          changes: this.changes,
+          rows: [{ id: this.lastID }]
+        });
+      }
+    });
+  });
+}
 
 // データベース初期化関数
 async function initializeDatabase() {
   try {
     // ユーザーテーブル作成
-    await pool.query(`
+    await run(`
       CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(50) UNIQUE NOT NULL,
-        password_hash VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
     // ゲーム統計テーブル作成
-    await pool.query(`
+    await run(`
       CREATE TABLE IF NOT EXISTS user_stats (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
         games_played INTEGER DEFAULT 0,
         player_wins INTEGER DEFAULT 0,
-        total_profit DECIMAL(10,2) DEFAULT 0,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        total_profit REAL DEFAULT 0,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
     // ゲーム履歴テーブル作成
-    await pool.query(`
+    await run(`
       CREATE TABLE IF NOT EXISTS game_history (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        player_card VARCHAR(1) NOT NULL,
-        opponent_card VARCHAR(1) NOT NULL,
-        history VARCHAR(10) NOT NULL,
-        is_player_first BOOLEAN NOT NULL,
-        winner VARCHAR(10) NOT NULL,
-        profit DECIMAL(10,2) NOT NULL,
-        player_ai VARCHAR(50) NOT NULL,
-        opponent_ai VARCHAR(50) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        player_card TEXT NOT NULL,
+        opponent_card TEXT NOT NULL,
+        history TEXT NOT NULL,
+        is_player_first INTEGER NOT NULL,
+        winner TEXT NOT NULL,
+        profit REAL NOT NULL,
+        player_ai TEXT NOT NULL,
+        opponent_ai TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
     // AI設定テーブル作成
-    await pool.query(`
+    await run(`
       CREATE TABLE IF NOT EXISTS user_ai_settings (
-        id SERIAL PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        ai_type VARCHAR(50) NOT NULL,
-        role VARCHAR(20) NOT NULL, -- 'player' or 'opponent'
-        settings JSONB NOT NULL,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        ai_type TEXT NOT NULL,
+        role TEXT NOT NULL,
+        settings TEXT NOT NULL,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(user_id, role)
       )
     `);
 
-    console.log('Database tables initialized successfully');
+    console.log('SQLite database tables initialized successfully');
   } catch (error) {
     console.error('Error initializing database:', error);
   }
 }
 
-module.exports = { pool, initializeDatabase };
+module.exports = { 
+  query, 
+  run,
+  initializeDatabase,
+  db 
+};

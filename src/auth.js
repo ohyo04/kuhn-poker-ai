@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { pool } = require('./database');
+const { query } = require('./database');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -33,7 +33,7 @@ async function authenticateToken(req, res, next) {
 
   // ユーザー情報をデータベースから取得
   try {
-    const result = await pool.query('SELECT id, username FROM users WHERE id = $1', [decoded.userId]);
+    const result = await query('SELECT id, username FROM users WHERE id = ?', [decoded.userId]);
     if (result.rows.length === 0) {
       return res.status(403).json({ error: 'User not found' });
     }
