@@ -1,6 +1,9 @@
 /* style.css (PC固定幅 + スマホ縦画面レスポンシブ対応の完全版) */
 html {
     height: 100%;
+    /* モバイルブラウザ対応 */
+    height: 100dvh; /* 動的ビューポート高さ */
+    height: 100vh; /* フォールバック */
     overflow-x: auto; /* PCで幅が狭くなった時に横スクロールを許可 */
     overflow-y: hidden;
 }
@@ -12,6 +15,9 @@ body {
     color: white;
     margin: 0;
     height: 100%;
+    /* モバイルブラウザ対応 */
+    height: 100dvh; /* 動的ビューポート高さ */
+    height: 100vh; /* フォールバック */
     display: flex;
     justify-content: center; /* コンテナを中央に配置 */
 }
@@ -676,6 +682,23 @@ h3 {
 
 /* --- ★★★ スマホ用レスポンシブ対応 (ここから) ★★★ --- */
 
+/* モバイルブラウザのUIバー対策 */
+@media (max-width: 799px) {
+    /* モバイルブラウザのアドレスバー・ツールバー対応 */
+    html {
+        /* iOS Safariのアドレスバー対応 */
+        -webkit-text-size-adjust: none;
+        touch-action: manipulation;
+    }
+    
+    body {
+        /* モバイルブラウザのスクロール問題を防ぐ */
+        position: fixed;
+        width: 100%;
+        overflow: hidden;
+    }
+}
+
 /* 画面幅が 799px 以下の時 (スマホ・タブレットの縦表示を想定) */
 @media (max-width: 799px) {
     /* PC用の固定幅指定を解除し、画面幅に合わせる */
@@ -704,8 +727,11 @@ h3 {
     /* メインコンテンツエリアの調整 */
     main#content-area {
         padding-bottom: 0;
-        height: calc(100vh - 80px); /* 下部タブ分を除く */
+        height: calc(100dvh - 80px); /* 動的ビューポート高さを使用 */
+        height: calc(100vh - 80px); /* フォールバック */
         overflow-y: auto; /* 必要に応じてスクロール */
+        /* モバイルブラウザのアドレスバー対応 */
+        min-height: calc(100vh - 160px); /* 最小高さを設定 */
     }
 
     .content-screen {
@@ -811,7 +837,8 @@ h3 {
     #game-table {
         margin-top: 5px;
         padding: 4px;
-        min-height: calc(100vh - 180px); /* 下部ナビとヘッダー分を除く */
+        min-height: calc(100dvh - 200px); /* 動的ビューポート高さを使用 */
+        min-height: calc(100vh - 200px); /* フォールバック */
         max-width: 100%;
         border-radius: 6px;
         border: 1px solid #c0c0c0;
@@ -1078,7 +1105,8 @@ h3 {
     
     /* ゲームテーブルを最大化 */
     #game-table {
-        min-height: calc(100vh - 220px); /* AI設定分のスペースを確保 */
+        min-height: calc(100dvh - 240px); /* 動的ビューポート高さを使用 */
+        min-height: calc(100vh - 240px); /* フォールバック */
         padding: 6px;
     }
     
@@ -1142,7 +1170,8 @@ h3 {
     }
     
     main#content-area {
-        height: calc(100vh - 70px);
+        height: calc(100dvh - 70px); /* 動的ビューポート高さを使用 */
+        height: calc(100vh - 70px); /* フォールバック */
     }
     
     body {
