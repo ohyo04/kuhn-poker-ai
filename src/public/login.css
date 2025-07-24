@@ -83,3 +83,32 @@ button:hover {
 .login-link a:hover {
     text-decoration: underline;
 }
+
+/* --- スマホ対応 --- */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 20px;
+        margin: 10px;
+        max-width: 90%;
+    }
+    
+    h2 {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    
+    .input-group input {
+        padding: 12px;
+        font-size: 16px; /* iOS Safariでのズーム防止 */
+    }
+    
+    button {
+        padding: 15px;
+        font-size: 16px;
+        min-height: 50px; /* タッチしやすいサイズ */
+    }
+    
+    .input-group {
+        margin-bottom: 15px;
+    }
+}

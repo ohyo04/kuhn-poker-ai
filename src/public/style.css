@@ -632,7 +632,26 @@ h3 {
         padding: 10px; /* スマホでは余白を少し詰める */
     }
     
-    body { font-size: 14px; }
+    body { 
+        font-size: 14px; 
+    }
+    
+    /* メッセージエリアを読みやすく */
+    #message-area {
+        font-size: 13px;
+        padding: 8px;
+        min-height: 40px;
+    }
+    
+    /* チップとポット表示を見やすく */
+    #pot-amount, #player-chips, #opponent-chips {
+        font-size: 14px;
+    }
+    
+    /* スコアボード文字サイズ調整 */
+    #scoreboard {
+        font-size: 13px;
+    }
 
     /* 上部の操作エリアを縦並びに変更 */
     #game-info {
@@ -650,11 +669,34 @@ h3 {
     }
     #player-ai-controls, #opponent-ai-controls { text-align: center; width: 100%; }
 
-    /* カードサイズを調整 */
-    .card { width: 50px; height: 75px; font-size: 28px; }
+    /* カードサイズを調整 - スマホで見やすく */
+    .card { 
+        width: 60px; 
+        height: 84px; 
+        font-size: 24px; 
+        margin: 2px;
+    }
     
-    /* ボタンのサイズと文字を調整 */
-    #actions button, .action-button { padding: 10px; font-size: 13px; }
+    .card-area {
+        min-height: 95px; /* カードサイズに合わせて調整 */
+    }
+    
+    /* ボタンのサイズと文字を調整 - タッチ操作最適化 */
+    #actions button, .action-button { 
+        padding: 12px 20px; 
+        font-size: 14px; 
+        min-height: 44px; /* タッチ操作推奨サイズ */
+        margin: 4px;
+    }
+    
+    /* ナビゲーションタブもタッチしやすく */
+    .nav-tab {
+        padding: 12px 16px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
     /* 統計画面を縦並びに */
     .summary-cards-container, .analysis-group { flex-direction: column; align-items: center; gap: 10px; }
@@ -665,8 +707,103 @@ h3 {
     #simulator-strategy-display { flex-direction: column; align-items: center; gap: 10px;}
     .strategy-card { width: 95%; min-width: 0; }
 
-    /* 設定オーバーレイの調整 */
-    .custom-ai-settings { flex-direction: column; align-items: center; padding-top: 60px; }
-    .ai-setting-column { width: 100%; padding-top: 10px; }
+    /* 設定オーバーレイの調整 - スマホでのスクロール対応 */
+    .custom-ai-settings { 
+        flex-direction: column; 
+        align-items: center; 
+        padding: 20px 10px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    .ai-setting-column { 
+        width: 100%; 
+        padding: 10px 0;
+        max-width: 300px;
+    }
+    
+    /* 設定画面のボタンもタッチしやすく */
+    .settings-button {
+        min-height: 44px;
+        padding: 8px 16px;
+        margin: 4px;
+    }
+    
+    /* セレクトボックスもタッチしやすく */
+    .ai-controls select {
+        min-height: 40px;
+        padding: 8px;
+        font-size: 14px;
+    }
 }
+
+/* --- 縦向きスマホ専用最適化 --- */
+@media (max-width: 479px) and (orientation: portrait) {
+    /* 非常に小さな画面での追加調整 */
+    .nav-tab {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    
+    .card { 
+        width: 50px; 
+        height: 70px; 
+        font-size: 20px; 
+    }
+    
+    .card-area {
+        min-height: 80px;
+    }
+    
+    #actions button, .action-button { 
+        padding: 10px 16px; 
+        font-size: 13px; 
+        margin: 2px;
+    }
+    
+    /* ゲーム画面のパディング調整 */
+    .content-screen {
+        padding: 5px;
+    }
+    
+    /* AI選択エリアをより縦並びに */
+    .ai-controls {
+        margin: 5px 0;
+    }
+    
+    .ai-controls select {
+        margin: 2px 0;
+        width: 90%;
+    }
+}
+
+/* --- 横向きスマホ・小タブレット対応 --- */
+@media (max-width: 799px) and (orientation: landscape) {
+    /* 横向きでは高さが制限されるので調整 */
+    .content-screen {
+        padding: 5px;
+    }
+    
+    #game-info {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    #scoreboard {
+        order: 0;
+        width: auto;
+        min-width: 200px;
+    }
+    
+    .card { 
+        width: 45px; 
+        height: 63px; 
+        font-size: 18px; 
+    }
+    
+    .card-area {
+        min-height: 70px;
+    }
+}
+
 /* --- ★★★ (ここまで) ★★★ --- */
