@@ -900,5 +900,128 @@ document.addEventListener('DOMContentLoaded', async () => {
         navTabs.appendChild(logoutBtn);
     }
 
+    // モバイル設定アイコンのイベントリスナー
+    const mobileSettingsIcon = document.getElementById('mobile-settings-icon');
+    if (mobileSettingsIcon) {
+        mobileSettingsIcon.addEventListener('click', () => {
+            // モバイル用AI設定モーダルを表示
+            showMobileAiSettings();
+        });
+    }
+
+    // モバイル用AI設定モーダル表示関数
+    function showMobileAiSettings() {
+        // 既存のモーダルがあれば削除
+        const existingModal = document.getElementById('mobile-ai-settings-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // モーダル作成
+        const modal = document.createElement('div');
+        modal.id = 'mobile-ai-settings-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        `;
+
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 350px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        `;
+
+        modalContent.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: #333;">AI設定</h3>
+                <button id="close-mobile-settings" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">×</button>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">プレイヤーAI:</label>
+                <select id="mobile-player-ai-select" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;">
+                    <option value="human">人間</option>
+                    <option value="random">ランダム</option>
+                    <option value="conservative">保守的</option>
+                    <option value="aggressive">アグレッシブ</option>
+                    <option value="tightaggressive">タイトアグレ</option>
+                    <option value="gto">GTO AI</option>
+                    <option value="custom">カスタムAI</option>
+                </select>
+                <button id="mobile-player-settings" style="width: 100%; padding: 8px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;">プレイヤー詳細設定</button>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">相手AI:</label>
+                <select id="mobile-opponent-ai-select" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;">
+                    <option value="random">ランダム</option>
+                    <option value="conservative">保守的</option>
+                    <option value="aggressive">アグレッシブ</option>
+                    <option value="tightaggressive">タイトアグレ</option>
+                    <option value="gto">GTO AI</option>
+                    <option value="custom">カスタムAI</option>
+                </select>
+                <button id="mobile-opponent-settings" style="width: 100%; padding: 8px; background: #FF9800; color: white; border: none; border-radius: 4px; cursor: pointer;">相手詳細設定</button>
+            </div>
+        `;
+
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+
+        // 現在の設定値を反映
+        const mobilePlayerSelect = modal.querySelector('#mobile-player-ai-select');
+        const mobileOpponentSelect = modal.querySelector('#mobile-opponent-ai-select');
+        
+        mobilePlayerSelect.value = elements.playerAiTypeSelect.value;
+        mobileOpponentSelect.value = elements.opponentAiTypeSelect.value;
+
+        // イベントリスナー設定
+        modal.querySelector('#close-mobile-settings').addEventListener('click', () => {
+            modal.remove();
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+
+        mobilePlayerSelect.addEventListener('change', async (e) => {
+            elements.playerAiTypeSelect.value = e.target.value;
+            elements.playerAiTypeSelect.dispatchEvent(new Event('change'));
+        });
+
+        mobileOpponentSelect.addEventListener('change', async (e) => {
+            elements.opponentAiTypeSelect.value = e.target.value;
+            elements.opponentAiTypeSelect.dispatchEvent(new Event('change'));
+        });
+
+        modal.querySelector('#mobile-player-settings').addEventListener('click', () => {
+            modal.remove();
+            elements.openPlayerSettingsButton.click();
+        });
+
+        modal.querySelector('#mobile-opponent-settings').addEventListener('click', () => {
+            modal.remove();
+            elements.openOpponentSettingsButton.click();
+        });
+    }
+
     main();
 });

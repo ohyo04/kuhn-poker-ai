@@ -362,11 +362,13 @@ h3 {
     border-radius: 8px;
     width: 200px;
     border: 2px solid #ffd700;
+    text-align: center; /* 中央寄せ */
 }
 #pot-area h3 {
     margin: 0;
     padding: 0;
     font-size: 14px;
+    text-align: center; /* h3も中央寄せ */
 }
 
 #pot-amount, #player-chips, #opponent-chips {
@@ -703,6 +705,7 @@ h3 {
     main#content-area {
         padding-bottom: 0;
         height: calc(100vh - 80px); /* 下部タブ分を除く */
+        overflow-y: auto; /* 必要に応じてスクロール */
     }
 
     .content-screen {
@@ -717,33 +720,32 @@ h3 {
         justify-content: space-between;
     }
     
-    /* 上部の操作エリアをコンパクトに */
+    /* ゲーム情報エリアをシンプルに */
     #game-info {
-        flex-direction: column;
-        gap: 8px;
-        padding: 8px;
-        background: rgba(0,0,0,0.1);
-        border-radius: 8px;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
+        padding: 0;
+        background: transparent;
     }
     
+    /* スコアボードをシンプルに */
     #scoreboard {
-        order: -1; /* 戦績を一番上に表示 */
-        border: none;
         background: rgba(255,255,255,0.1);
         border-radius: 6px;
         padding: 8px;
-        width: 100%;
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        display: flex;
+        justify-content: space-between;
         gap: 8px;
-        text-align: center;
+        font-size: 12px;
+        margin: 0 auto 8px auto;
+        max-width: 350px;
     }
     
     .stat-item {
         background: rgba(255,255,255,0.1);
         padding: 6px;
         border-radius: 4px;
+        flex: 1;
+        text-align: center;
     }
     
     .stat-value {
@@ -771,8 +773,98 @@ h3 {
     
     .ai-controls select {
         width: 100%;
-        max-width: 200px;
-        margin: 4px 0;
+        max-width: 70px; /* 大幅に幅を制限 */
+        margin: 0;
+        font-size: 7px; /* さらに小さく */
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    /* AI制御部分をモバイルでは非表示 */
+    .ai-controls {
+        display: none !important;
+    }
+    
+    .ai-controls label {
+        font-size: 6px; /* さらに小さく */
+        margin: 0;
+        display: block;
+        text-align: center;
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden; /* テキストのはみ出しを防ぐ */
+        text-overflow: ellipsis; /* 省略記号を表示 */
+    }
+    
+    /* ボタンも小さく */
+    .ai-controls button {
+        font-size: 6px; /* さらに小さく */
+        padding: 1px;
+        margin: 0;
+        max-width: 30px; /* ボタンの幅をさらに制限 */
+        border-radius: 2px;
+        box-sizing: border-box;
+        height: 12px; /* 高さを固定 */
+    }
+    
+    /* ゲームテーブルを大きく表示 */
+    #game-table {
+        margin-top: 5px;
+        padding: 4px;
+        min-height: calc(100vh - 180px); /* 下部ナビとヘッダー分を除く */
+        max-width: 100%;
+        border-radius: 6px;
+        border: 1px solid #c0c0c0;
+    }
+    
+    /* メインゲーム画面の位置調整 */
+    .content-screen {
+        padding: 2px;
+    }
+    
+    /* モバイル用ゲーム要素の調整 */
+    #game-table h2 {
+        font-size: 14px;
+        margin: 2px 0;
+    }
+    
+    .info-area {
+        font-size: 12px;
+        margin: 2px 0;
+    }
+    
+    #message-area {
+        font-size: 11px; /* さらに小さく */
+        padding: 2px;
+        margin: 2px 0;
+    }
+    
+    /* 390px幅専用の調整 */
+    @media (max-width: 390px) {
+        .ai-controls {
+            max-width: 70px;
+            min-width: 60px;
+        }
+        
+        .ai-controls select {
+            max-width: 60px;
+            font-size: 6px;
+        }
+        
+        .ai-controls button {
+            max-width: 25px;
+            font-size: 5px;
+            height: 10px;
+        }
+        
+        .ai-controls label {
+            font-size: 5px;
+        }
+        
+        #game-info {
+            padding: 1px;
+            gap: 1px;
+        }
     }
     
     .settings-button {
@@ -783,13 +875,13 @@ h3 {
 
     /* カードサイズを調整 - スマホで見やすく */
     .card { 
-        width: 70px; 
-        height: 98px; 
-        font-size: 28px; 
-        margin: 8px;
-        border: 3px solid #333;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        width: 60px; /* さらに小さく */
+        height: 84px; /* さらに小さく */
+        font-size: 24px; /* フォントサイズを調整 */
+        margin: 4px; /* マージンを削減 */
+        border: 2px solid #333; /* ボーダーを細く */
+        border-radius: 8px; /* 角丸を小さく */
+        box-shadow: 0 3px 6px rgba(0,0,0,0.3);
     }
     
     .card-area {
@@ -802,13 +894,13 @@ h3 {
 
     /* ボタンのサイズと文字を調整 - タッチ操作最適化 */
     #actions button, .action-button { 
-        padding: 15px 25px; 
-        font-size: 16px; 
-        min-height: 50px; /* タッチ操作推奨サイズ */
-        margin: 6px;
-        border-radius: 10px;
+        padding: 10px 15px; /* パディングを削減 */
+        font-size: 14px; /* フォントサイズを削減 */
+        min-height: 40px; /* 高さを削減 */
+        margin: 3px; /* マージンを削減 */
+        border-radius: 6px; /* 角丸を小さく */
         font-weight: 600;
-        min-width: 120px;
+        min-width: 80px; /* 幅を削減 */
     }
     
     #actions {
@@ -820,7 +912,8 @@ h3 {
     }
     
     body { 
-        font-size: 14px; 
+        font-size: 14px;
+        padding-bottom: 80px; /* 下部ナビ分のスペースを確保 */
     }
     
     /* メッセージエリアを読みやすく */
@@ -843,10 +936,11 @@ h3 {
         background: linear-gradient(135deg, #2e7d32, #388e3c);
         padding: 15px;
         border-radius: 12px;
-        margin: 15px 0;
+        margin: 15px auto; /* 左右を auto に変更して中央配置 */
         text-align: center;
         border: 3px solid #ffeb3b;
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        max-width: 250px; /* 最大幅を制限 */
     }
     
     #pot-area h3 {
@@ -955,14 +1049,51 @@ h3 {
     
     /* AI設定エリアをより縦並びに */
     .ai-controls {
-        margin: 6px 0;
-        padding: 8px;
+        margin: 2px 0;
+        padding: 2px;
+        font-size: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: 140px; /* 幅をさらに制限 */
+        box-sizing: border-box;
     }
     
     .ai-controls select {
-        margin: 3px 0;
-        width: 95%;
-        max-width: 180px;
+        margin: 1px 0;
+        width: 100%;
+        max-width: 120px; /* 幅をさらに制限 */
+        font-size: 10px;
+        padding: 1px;
+        box-sizing: border-box;
+    }
+    
+    .ai-controls button {
+        font-size: 8px;
+        padding: 1px 3px;
+        margin: 1px;
+        max-width: 50px; /* ボタンの幅をさらに制限 */
+        box-sizing: border-box;
+    }
+    
+    /* ゲームテーブルを最大化 */
+    #game-table {
+        min-height: calc(100vh - 220px); /* AI設定分のスペースを確保 */
+        padding: 6px;
+    }
+    
+    /* game-infoをさらに圧縮 */
+    #game-info {
+        max-height: 150px; /* 高さを拡張 */
+        padding: 2px;
+        gap: 2px;
+        overflow: visible; /* 内容を表示 */
+    }
+    
+    #scoreboard {
+        font-size: 10px;
+        padding: 2px;
+        gap: 2px;
     }
     
     .settings-button {
@@ -974,7 +1105,8 @@ h3 {
     /* ポットエリアの調整 */
     #pot-area {
         padding: 12px;
-        margin: 12px 0;
+        margin: 12px auto; /* 中央配置 */
+        max-width: 200px; /* 最大幅を制限 */
     }
     
     #pot-area h3 {
@@ -1013,6 +1145,10 @@ h3 {
         height: calc(100vh - 70px);
     }
     
+    body {
+        padding-bottom: 70px; /* 小さい画面では下部ナビが小さいため */
+    }
+    
     .bottom-nav-tabs {
         padding: 6px 0 max(6px, env(safe-area-inset-bottom));
     }
@@ -1046,7 +1182,8 @@ h3 {
         order: 0;
         width: auto;
         min-width: 250px;
-        grid-template-columns: repeat(3, 1fr);
+        display: flex; /* gridからflexに変更 */
+        justify-content: space-between;
         flex: 1;
     }
     
@@ -1090,6 +1227,38 @@ h3 {
     
     #pot-amount {
         font-size: 18px;
+    }
+}
+
+/* Mobile Settings Icon */
+.mobile-settings-icon {
+    display: none; /* デスクトップでは非表示 */
+}
+
+@media (max-width: 799px) {
+    .mobile-settings-icon {
+        display: block;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        font-size: 24px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        border-radius: 50%;
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 1001;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    
+    .mobile-settings-icon:hover {
+        background: rgba(0, 0, 0, 0.9);
+        transform: rotate(90deg);
     }
 }
 
