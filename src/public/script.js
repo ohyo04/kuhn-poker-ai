@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- ユーザーデータの読み込み ---
     let currentUserData = {
-        stats: { gamesPlayed: 0, playerWins: 0, totalProfit: 0 },
+        stats: { gamesPlayed: 0, playerWins: 0, opponentWins: 0, totalProfit: 0 },
         history: [],
         aiTypes: { player: 'human', opponent: 'kensjitsu' },
         customAiSettings: {
@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         elements.playerWins.textContent = currentUserData.stats.playerWins;
-        elements.opponentWins.textContent = state.stats.opponentWins;
+        elements.opponentWins.textContent = currentUserData.stats.opponentWins;
         elements.playerEv.textContent = (currentUserData.stats.gamesPlayed > 0 ? (currentUserData.stats.totalProfit / currentUserData.stats.gamesPlayed).toFixed(2) : '0.00');
     }
 
@@ -783,8 +783,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 // サーバー側でのデータ削除は今回は実装せず、ローカルのみリセット
                 currentUserData.history = [];
-                currentUserData.stats = { gamesPlayed: 0, playerWins: 0, totalProfit: 0 };
-                state.stats.opponentWins = 0;
+                currentUserData.stats = { gamesPlayed: 0, playerWins: 0, opponentWins: 0, totalProfit: 0 };
+                state.stats = currentUserData.stats;
                 updateStatsHub();
                 alert('統計データがリセットされました。');
             } catch (error) {
@@ -871,7 +871,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         syncCurrentSettings('opponent', state.aiTypes.opponent);
         
         state.stats = currentUserData.stats;
-        state.stats.opponentWins = 0;
+        // opponentWinsはデータベースから取得した値を使用
         
         initializeFilters();
         setupSimulator();

@@ -96,18 +96,19 @@ router.post('/login', async (req, res) => {
 router.get('/stats', authenticateToken, async (req, res) => {
   try {
     const result = await query(
-      'SELECT games_played, player_wins, total_profit FROM user_stats WHERE user_id = ?',
+      'SELECT games_played, player_wins, opponent_wins, total_profit FROM user_stats WHERE user_id = ?',
       [req.user.id]
     );
 
     if (result.rows.length === 0) {
-      return res.json({ gamesPlayed: 0, playerWins: 0, totalProfit: 0 });
+      return res.json({ gamesPlayed: 0, playerWins: 0, opponentWins: 0, totalProfit: 0 });
     }
 
     const stats = result.rows[0];
     res.json({
       gamesPlayed: stats.games_played,
       playerWins: stats.player_wins,
+      opponentWins: stats.opponent_wins,
       totalProfit: parseFloat(stats.total_profit)
     });
 
@@ -169,15 +170,17 @@ router.post('/game-result', authenticateToken, async (req, res) => {
     );
 
     // 統計更新
-    const winIncrement = winner === 'player' ? 1 : 0;
+    const playerWinIncrement = winner === 'player' ? 1 : 0;
+    const opponentWinIncrement = winner === 'opponent' ? 1 : 0;
     await run(
       `UPDATE user_stats 
        SET games_played = games_played + 1, 
            player_wins = player_wins + ?, 
+           opponent_wins = opponent_wins + ?,
            total_profit = total_profit + ?,
            updated_at = CURRENT_TIMESTAMP
        WHERE user_id = ?`,
-      [winIncrement, profit, req.user.id]
+      [playerWinIncrement, opponentWinIncrement, profit, req.user.id]
     );
 
     res.json({ success: true });

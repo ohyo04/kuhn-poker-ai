@@ -66,10 +66,22 @@ async function initializeDatabase() {
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
         games_played INTEGER DEFAULT 0,
         player_wins INTEGER DEFAULT 0,
+        opponent_wins INTEGER DEFAULT 0,
         total_profit REAL DEFAULT 0,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // 既存のテーブルにopponent_winsカラムが存在しない場合は追加
+    try {
+      await run(`ALTER TABLE user_stats ADD COLUMN opponent_wins INTEGER DEFAULT 0`);
+      console.log('Added opponent_wins column to user_stats table');
+    } catch (error) {
+      // カラムが既に存在する場合はエラーを無視
+      if (!error.message.includes('duplicate column name')) {
+        throw error;
+      }
+    }
 
     // ゲーム履歴テーブル作成
     await run(`
